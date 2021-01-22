@@ -1,0 +1,26 @@
+.task {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+  border-bottom: 1px solid #690fad;
+  font-size: 24px;
+  line-height: 40px;
+
+  &_title {
+    cursor: pointer;
+
+    &__completed {
+      text-decoration: line-through;
+    }
+  }
+
+  &_delete-icon {
+    height: 24px;
+    cursor: pointer;
+
+    &:hover {
+      fill:#688900;
+    }
+  }
+}
