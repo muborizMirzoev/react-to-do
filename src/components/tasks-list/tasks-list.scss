@@ -1,4 +1,10 @@
+@import '../preloader/preloader.scss';
+
 .tasks-list {
+  &__loading {
+    @extend %block-preloader;
+  }
+
   display: flex;
   flex-direction: column;
 

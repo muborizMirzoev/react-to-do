@@ -1,21 +1,29 @@
 import React from 'react';
+import classNames from 'classnames';
+import tomorrowRequest from '../../api/tomorrow';
+
 import Button from '../button';
 import TaskForm from '../task-form/task-form';
 import Task from '../task/task';
+import Message from '../message/message';
 
 import Locale from '../../locale';
 import './tasks-list.scss';
 
 
-const tasks = [
-  { id: 1, title: 'React', completed: true },
-  { id: 2, title: 'Props', completed: true },
-  { id: 3, title: 'State', completed: false },
-  { id: 4, title: 'Lifecycle', completed: false },
-];
-
 class TasksList extends React.Component {
-  state = { tasks };
+  state = { tasks: [], loading: false, message: null };
+
+  componentDidMount() {
+    this.setState({ loading: true });
+    tomorrowRequest
+      .get('/tasks')
+      .then(response => {
+        const tasks = response.data.data;
+        this.setState({ tasks, loading: false });
+      })
+      .catch(() => this.setState({ message: 'NETWORK_ERROR', loading: false }));
+  }
 
   filterActive = () => {
     const activeTasks = this.state.tasks.filter(task => !task.completed);
@@ -34,32 +42,49 @@ class TasksList extends React.Component {
   };
 
   addTask = title => {
-    this.setState(prevState => ({
-      tasks: [
-        ...prevState.tasks,
-        { id: Math.random(), title, completed: false }
-      ]
-    }));
+    this.setState({ loading: true });
+    tomorrowRequest
+      .post('./tasks', {
+        title
+      })
+      .then(response => {
+        if (response.data.status === 'OK') {
+          this.setState(prevState => ({
+            tasks: [...prevState.tasks, response.data.data]
+          }));
+        } else {
+          this.setState({ message: response.data.message });
+        }
+
+        this.setState({ loading: false });
+      });
   };
 
   render() {
     const locale = Locale.tasksList;
-    return (
-      <div className="tasks-list">
-        <TaskForm addTask={this.addTask}/>
-        {this.state.tasks.map(({ title, completed, id }) => (
-          <Task
-            title={title}
-            completed={completed}
-            toggleCompleted={() => this.toggleCompleted(id)}
-            key={id}
-          />
-        ))}
-        <Button label={locale.buttonLabel} onClick={this.filterActive} />
+    const { loading, message } = this.state;
 
+    return (
+      <div
+        className={classNames('tasks-list', { 'tasks-list__loading': loading })}
+      >
+        <TaskForm addTask={this.addTask} />
+        {message && <Message message={message} />}
+        {this.state.tasks.length === 0 && <div>{locale.emptyMessage}</div>}
+        {this.state.tasks.length > 0 &&
+          this.state.tasks.map(({ title, completed, id }) => (
+            <Task
+              title={title}
+              completed={completed}
+              toggleCompleted={this.toggleCompleted}
+              id={id}
+              key={id}
+            />
+          ))}
+        <Button label={locale.buttonLabel} onClick={this.filterActive} />
       </div>
     );
   }
-};
+}
 
 export default TasksList;

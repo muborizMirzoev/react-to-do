@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import className from 'classnames';
 
 import { ReactComponent as DeleteIcon } from './delete.svg';
 import './task.scss';
@@ -8,7 +9,9 @@ const Task = (props) => {
   return (
     <div className='task'>
       <div
-        className={`task_title ${props.completed ? 'task_title__completed' : ''}`}
+        className={className('tast_title', {
+          task_title__completed: props.completed
+        })}
         onClick={props.toggleCompleted}
       >
         {props.title}
